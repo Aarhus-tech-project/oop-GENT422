@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservation System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 2.5em;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            border: none;
+            background: #f0f0f0;
+            cursor: pointer;
+            border-radius: 5px 5px 0 0;
+            font-weight: bold;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .tab-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+        }
+
+        button {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        .message {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .message.success {
+            display: block;
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            display: block;
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .venue-item {
+            border: 2px solid #2196F3;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+
+        .venue-item h3 {
+            margin-top: 0;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .venue-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .venue-info p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .venue-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .venue-buttons button {
+            flex: 1;
+            padding: 12px;
+            font-size: 15px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .edit-btn {
+            background: #4CAF50;
+        }
+
+        .edit-btn:hover {
+            background: #45a049;
+        }
+
+        .delete-btn {
+            background: #f44336;
+        }
+
+        .delete-btn:hover {
+            background: #da190b;
+        }
+
+        .reservation-item {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            background: #f5f5f5;
+        }
+
+        .reservation-item h4 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .reservation-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 16px;
+        }
+
+        .success {
+            color: #4CAF50;
+        }
+
+        .error {
+            color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1> Reservation System</h1>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('venues')">📍 Alle Steder</button>
+            <button class="tab-btn" onclick="switchTab('createVenue')">➕ Opret Lokation</button>
+            <button class="tab-btn" onclick="switchTab('reservations')">📅 Reservationer</button>
+            <button class="tab-btn" onclick="switchTab('createReservation')">🎟️ Ny Reservation</button>
+        </div>
+
+        
+        <div id="venues" class="tab-content active">
+            <h2> Alle Steder</h2>
+            <div id="venueMessage"></div>
+            <div id="venuesList"></div>
+            <div id="venuesEmpty" class="no-data">Ingen lokationer fundet</div>
+        </div>
+
+        
+        <div id="createVenue" class="tab-content">
+            <h2> Opret Ny Lokation</h2>
+            <div id="createVenueMessage"></div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="venueName">Navn på Lokation:</label>
+                    <input type="text" id="venueName" placeholder="F.eks. Restaurant XYZ">
+                </div>
+                <div class="form-group">
+                    <label for="venueType">Type:</label>
+                    <select id="venueType">
+                        <option value="">Vælg type...</option>
+                        <option value="Restaurant">Restaurant</option>
+                        <option value="Cinema">Cinema</option>
+                        <option value="Airplane">Airplane</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="venueCapacity">Kapacitet (Pladser):</label>
+                    <input type="number" id="venueCapacity" placeholder="F.eks. 50" min="1">
+                </div>
+            </div>
+            <button onclick="createVenue()" style="width: 100%; margin-top: 20px;">✅ Opret Lokation</button>
+        </div>
+
+        
+        <div id="reservations" class="tab-content">
+            <h2> Alle Reservationer</h2>
+            <div id="reservationMessage"></div>
+            <div id="reservationsList"></div>
+            <div id="reservationsEmpty" class="no-data">Ingen reservationer fundet</div>
+        </div>
+
+        
+        <div id="createReservation" class="tab-content">
+            <h2> Ny Reservation</h2>
+            <div id="createReservationMessage"></div>
+            <div class="form-group">
+                <label for="reservationVenue">Vælg Lokation:</label>
+                <select id="reservationVenue">
+                    <option value="">Vælg lokation...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="customerName">Kundenavn:</label>
+                <input type="text" id="customerName" placeholder="F.eks. John Doe">
+            </div>
+            <div class="form-group">
+                <label for="seatCount">Antal Pladser:</label>
+                <input type="number" id="seatCount" placeholder="F.eks. 4" min="1">
+            </div>
+            <button onclick="createReservation()" style="width: 100%;">✅ Opret Reservation</button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+
+        
+        function switchTab(tabName) {
+            const tabs = document.querySelectorAll('.tab-content');
+            const btns = document.querySelectorAll('.tab-btn');
+
+            tabs.forEach(tab => tab.classList.remove('active'));
+            btns.forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            if (tabName === 'venues') loadVenues();
+            if (tabName === 'reservations') loadReservations();
+            if (tabName === 'createReservation') loadVenuesForReservation();
+        }
+
+        
+        async function loadVenues() {
+            try {
+                const response = await fetch(`${API_URL}/venues`);
+                const venues = await response.json();
+
+                const venuesList = document.getElementById('venuesList');
+                const venuesEmpty = document.getElementById('venuesEmpty');
+
+                if (venues.length === 0) {
+                    venuesList.innerHTML = '';
+                    venuesEmpty.style.display = 'block';
+                    return;
+                }
+
+                venuesEmpty.style.display = 'none';
+                venuesList.innerHTML = venues.map(v => `
+                    <div class="venue-item">
+                        <h3>${v.name}</h3>
+                        <div class="venue-info">
+                            <p><strong>Type:</strong> ${v.venueType}</p>
+                            <p><strong>Kapacitet:</strong> ${v.capacity} pladser</p>
+                            <p><strong>ID:</strong> ${v.venueId}</p>
+                            <p><strong>Oprettet:</strong> ${new Date(v.createdDate).toLocaleDateString('da-DK')}</p>
+                        </div>
+                        <div class="venue-buttons">
+                            <button class="edit-btn" onclick="editVenue(${v.venueId}, '${v.name}')">
+                                 Rediger Navn
+                            </button>
+                            <button class="delete-btn" onclick="deleteVenue(${v.venueId}, '${v.name}')">
+                                 Slet Lokation
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Fejl ved hentning af venues:', error);
+                document.getElementById('venueMessage').innerHTML = '<div class="message error">❌ Fejl ved hentning af lokationer</div>';
+            }
+        }
+
+        
+        async function createVenue() {
+            const name = document.getElementById('venueName').value;
+            const venueType = document.getElementById('venueType').value;
+            const capacity = parseInt(document.getElementById('venueCapacity').value);
+
+            if (!name || !venueType || !capacity) {
+                alert('Udfyld alle felter!');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/venues`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, venueType, capacity })
+                });
+
+                if (response.ok) {
+                    alert('✅ Lokation oprettet med succes!');
+                    document.getElementById('venueName').value = '';
+                    document.getElementById('venueType').value = '';
+                    document.getElementById('venueCapacity').value = '';
+                    loadVenues();
+                } else {
+                    const errorData = await response.json();
+                    alert(` Fejl: ${errorData.error}`);
+                }
+            } catch (error) {
+                alert(` Fejl: ${error.message}`);
+            }
+        }
+
+        
+        async function editVenue(venueId, currentName) {
+            const newName = prompt(`Rediger navn for denne lokation:\n\nNuværende navn: ${currentName}`, currentName);
+            
+            if (newName === null) {
+                return;
+            }
+
+            if (!newName.trim() || newName.trim().length < 2) {
+                alert(' Navn skal være mindst 2 tegn');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/venues/${venueId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: newName.trim() })
+                });
+
+                if (response.ok) {
+                    alert(' Lokation opdateret med succes!');
+                    loadVenues();
+                } else {
+                    const errorData = await response.json();
+                    alert(` Fejl: ${errorData.error || 'Kunne ikke opdatere lokation'}`);
+                }
+            } catch (error) {
+                alert(` Fejl ved opdatering: ${error.message}`);
+                console.error('Edit fejl:', error);
+            }
+        }
+
+        
+        async function deleteVenue(venueId, venueName) {
+            const confirmDelete = confirm(
+                ` Er du sikker på at du vil slette "${venueName}"?\n\nDenne handling kan IKKE fortrydes!`
+            );
+            
+            if (!confirmDelete) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/venues/${venueId}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (response.ok) {
+                    alert(' Lokation slettet med succes!');
+                    loadVenues();
+                } else {
+                    const errorData = await response.json();
+                    alert(` Fejl: ${errorData.error || 'Kunne ikke slette lokation'}`);
+                }
+            } catch (error) {
+                alert(` Fejl ved sletning: ${error.message}`);
+                console.error('Delete fejl:', error);
+            }
+        }
+
+        
+        async function loadReservations() {
+            try {
+                const response = await fetch(`${API_URL}/reservations`);
+                const reservations = await response.json();
+
+                const reservationsList = document.getElementById('reservationsList');
+                const reservationsEmpty = document.getElementById('reservationsEmpty');
+
+                if (reservations.length === 0) {
+                    reservationsList.innerHTML = '';
+                    reservationsEmpty.style.display = 'block';
+                    return;
+                }
+
+                reservationsEmpty.style.display = 'none';
+                reservationsList.innerHTML = reservations.map(r => `
+                    <div class="reservation-item">
+                        <h4>Reservation #${r.reservationId}</h4>
+                        <div class="reservation-info">
+                            <p><strong>Kunde:</strong> ${r.customerName}</p>
+                            <p><strong>Lokation:</strong> ${r.venue?.name || 'N/A'}</p>
+                            <p><strong>Dato:</strong> ${new Date(r.reservationDate).toLocaleDateString('da-DK')}</p>
+                            <p><strong>Pladser:</strong> ${r.seatCount || 0}</p>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Fejl ved hentning af reservationer:', error);
+            }
+        }
+
+        
+        async function loadVenuesForReservation() {
+            try {
+                const response = await fetch(`${API_URL}/venues`);
+                const venues = await response.json();
+
+                const select = document.getElementById('reservationVenue');
+                select.innerHTML = '<option value="">Vælg lokation...</option>';
+                venues.forEach(v => {
+                    select.innerHTML += `<option value="${v.venueId}">${v.name} (${v.capacity} pladser)</option>`;
+                });
+            } catch (error) {
+                console.error('Fejl ved hentning af venues:', error);
+            }
+        }
+
+       
+        async function createReservation() {
+            const venueId = parseInt(document.getElementById('reservationVenue').value);
+            const customerName = document.getElementById('customerName').value;
+            const seatCount = parseInt(document.getElementById('seatCount').value);
+
+            if (!venueId || !customerName || !seatCount) {
+                alert(' Udfyld alle felter!');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/reservations`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ venueId, customerName, seatCount })
+                });
+
+                if (response.ok) {
+                    alert(' Reservation oprettet med succes!');
+                    document.getElementById('reservationVenue').value = '';
+                    document.getElementById('customerName').value = '';
+                    document.getElementById('seatCount').value = '';
+                    loadReservations();
+                } else {
+                    const errorData = await response.json();
+                    alert(` Fejl: ${errorData.error}`);
+                }
+            } catch (error) {
+                alert(` Fejl: ${error.message}`);
+            }
+        }
+
+        
+        loadVenues();
+    </script>
+</body>
+</html>
